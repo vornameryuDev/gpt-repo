@@ -22,15 +22,10 @@ def embed_file(file, api_key):
     file_name = file.name
     file_path = f'././.cache/files/{file_name}'
     file_content = file.read()
-<<<<<<< HEAD
     file_path = f"././.cache/files/{file_name}"
     # file_path = f"/.cache/files/{file_name}"
     with open(file_path, 'wb') as f: 
         f.write(file_content)
-=======
-    with open(file_path, "wb") as f:
-        f.write(file_content)    
->>>>>>> e01de0e01bb12b05c2de3eb98ec5611475c25ea7
 
     #load_file    
     loader = TextLoader(file_path)

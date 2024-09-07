@@ -6,19 +6,30 @@
         - 검색내용 Wikipedia에서 찾기
 
 2. 정의된 파일 분할(docs) [o]
-3. 문제와 답 만들기
+3. 문제와 답 만들기[o]
     question: .....,
     answer: ....(o), ....(x), ....(x)
 
     question: .....,
     answer: ....(o), ....(x), ....(x)
-4. 포매팅 하기
+4. 포매팅 하기[o]
     question: .....,
     answers: [
         {answer: ...., correct: True},
         {answer: ...., correct: False},
         {answer: ...., correct: False},
     ]
+
+
+[과제]
+- 함수 호출을 사용 [o]
+- 만점이 아닌 경우 유저가 시험을 다시 치를 수 있도록 허용합니다. [o]: st.warning
+- 만점이면 st.ballons를 사용합니다. [o]: st.balloon
+- 유저가 자체 OpenAI API 키를 사용하도록 허용하고, st.sidebar 내부의 st.input에서 로드합니다. [o]: text_input
+
+- 유저가 시험의 난이도를 커스터마이징 할 수 있도록 하고 LLM이 어려운 문제 또는 쉬운 문제를 생성하도록 합니다. [x]
+- st.sidebar를 사용하여 Streamlit app의 코드와 함께 Github 리포지토리에 링크를 넣습니다. [x]
+
 '''
 
 
@@ -85,10 +96,11 @@ class JsonOutputParser(BaseOutputParser):
     def parse(self, text):
         text = text.replace("```", "").replace("json", "")
         return json.loads(text)
-    
-def create_quiz(docs):
+
+@st.cache_resource(show_spinner="Making quiz...")
+def create_quiz(_docs):
     chain = {'context': question_chain} | format_chain | output_parser
-    response = chain.invoke(docs)
+    response = chain.invoke(_docs)
     return response
 
 #---------- sidebar
@@ -276,23 +288,30 @@ if not docs:
 else:
     response = create_quiz(docs) # docs > question > formatting
     st.write(response)
+    correct_count = 0 #맞춘 갯수
+    total_questions = len(response['questions']) #질문 갯수
+
     with st.form("questions_form"):
-        for question in response["questions"]:
-            st.write(question["question"])
-            answers = [answer["answer"] for answer in question["answers"]]
+        for question in response["questions"]:            
+            answers = [answer['answer'] for answer in question["answers"]]
             value = st.radio(
                 "Select an option.",
                 answers,
                 index=None,
             )
-            if {'answer':value, 'currect': True} in answers:
+            if {'answer':value, 'correct': True} in question['answers']:
                 st.success('Correct!!')
+                correct_count += 1 #맞추면 +1
             elif value is not None:
                 st.error('Wrong!!!')
         button = st.form_submit_button()
-
-
-
+        if button:            
+            if correct_count == total_questions: #다맞추면 balloons
+                st.balloons()
+            else: #못맞추면
+                #warning
+                st.warning(f"You got {correct_count} out of {total_questions} correct. Please try again!")
+        
 
 
 
