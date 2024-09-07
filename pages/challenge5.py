@@ -17,6 +17,7 @@ def embedding_file(file):
     file_name = file.name
     file_content = file.read()
     file_path = f"././.cache/files/{file_name}"
+    # file_path = f"/.cache/files/{file_name}"
     with open(file_path, 'wb') as f: 
         f.write(file_content)
 
