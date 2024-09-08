@@ -1,35 +1,9 @@
 '''
-1. 퀴즈낼 파일 정의[o]
-    1) file upload
-    2) Wikipedia
-        - 키워드 검색
-        - 검색내용 Wikipedia에서 찾기
-
-2. 정의된 파일 분할(docs) [o]
-3. 문제와 답 만들기[o]
-    question: .....,
-    answer: ....(o), ....(x), ....(x)
-
-    question: .....,
-    answer: ....(o), ....(x), ....(x)
-4. 포매팅 하기[o]
-    question: .....,
-    answers: [
-        {answer: ...., correct: True},
-        {answer: ...., correct: False},
-        {answer: ...., correct: False},
-    ]
-
-
-[과제]
-- 함수 호출을 사용 [o]
 - 만점이 아닌 경우 유저가 시험을 다시 치를 수 있도록 허용[o]: st.warning
 - 만점이면 st.ballons를 사용 [o]: st.balloon
 - 유저가 자체 OpenAI API 키를 사용하도록 허용, st.sidebar 내부의 st.input에서 로드합니다. [o]: text_input
-
 - 유저가 시험의 난이도를 커스터마이징 할 수 있도록, LLM이 어려운 문제 또는 쉬운 문제를 생성 [o]
 - st.sidebar를 사용하여 Streamlit app의 코드와 함께 Github 리포지토리에 링크 삽입 [x]
-
 '''
 
 
@@ -102,7 +76,7 @@ questions_prompt = ChatPromptTemplate.from_messages(
         (
             "system",
             """
-                You are an assistant in the role of a teacher. Give 5 problems based on the received context. Each problem has 4 options. Only one of the choices is correct. Mark the correct answer using (o).Please refer to the example below. The difficulty levels of the questions are Hard and Easny. Set it randomly. And please specify the difficulty level next to the problem.
+                You are an assistant in the role of a teacher. Give 15 problems based on the received context. Each problem has 4 options. Only one of the choices is correct. Mark the correct answer using (o).Please refer to the example below. The difficulty levels of the questions are Hard and Easny. Set it randomly. And please specify the difficulty level next to the problem.
          
                 Question examples:                    
                     Question: What is the color of the ocean? (Hard)
@@ -330,26 +304,29 @@ else:
 
     #문제만들기
     response = run_quiz_chain(docs, keyword if keyword else file.name)
+
+    #레벨에 맞는 문제 추출
+    if level == "All":
+        questions = [question for question in response["questions"] if question['level']=="Hard" or question['level']=="Easy"]
+    else:
+        questions = [question for question in response["questions"] if question['level']==level]
     correct_count = 0 #맞춘 갯수
-    total_questions = len(response['questions']) #질문 갯수
+    total_questions = len(questions) #질문 갯수
 
-    with st.form("questions_form"):
-        for i, question in enumerate(response["questions"]):
-            #설정한 레벨만 나오게 하기
-            if question['level'] == level:
-
-                st.write(f"**{i+1}. {question['question']}**")
-                value = st.radio(
-                    "Select an option.",
-                    [answer["answer"] for answer in question["answers"]],
-                    index=None,
-                    key=f"q_{i}"
-                )
-                if {"answer": value, "correct": True} in question["answers"]:
-                    st.success("Correct!")
-                    correct_count += 1
-                elif value is not None:
-                    st.error("Wrong!")
+    with st.form("questions_form"):        
+        for i, question in enumerate(questions):
+            st.write(f"**{i+1}. {question['question']}**")
+            value = st.radio(
+                "Select an option.",
+                [answer["answer"] for answer in question["answers"]],
+                index=None,
+                key=f"q_{i}"
+            )
+            if {"answer": value, "correct": True} in question["answers"]:
+                st.success("Correct!")
+                correct_count += 1
+            elif value is not None:
+                st.error("Wrong!")
                     
         button = st.form_submit_button()
         if button:            
