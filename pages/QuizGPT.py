@@ -150,43 +150,29 @@ with st.sidebar:
     )
 
 #---------- main
-llm = ChatOpenAI(
-    temperature=0.1,
-    model="gpt-4o-mini",
-    streaming=True,
-    callbacks=[StreamingStdOutCallbackHandler()],
-    api_key=api_key
-)
-question_prompt = ChatPromptTemplate.from_messages([
-    (
-        'system',
-        '''        
-        You are an assistant in the role of a teacher. Give 4 problems based on the received context. Each problem has 4 options. Only one of the choices is correct. Mark the correct answer using (o).Please refer to the example below. The difficulty levels of the questions are high, medium, and low. Set it randomly. And please specify the difficulty level next to the problem.
-
-        Question Examples:
-            Question: What is the color of the ocean? (high)
-            Answers: Red|Yellow|Green|Blue(o)
-                
-            Question: What is the capital or Georgia? (medium)
-            Answers: Baku|Tbilisi(o)|Manila|Beirut
-                
-            Question: When was Avatar released? (high)
-            Answers: 2007|2001|2009(o)|1998
-                
-            Question: Who was Julius Caesar? (low)
-            Answers: A Roman Emperor(o)|Painter|Actor|Model
-
-        Context: {context}
+if not docs:
+    st.markdown(
+        '''
+            We will create a quiz related to the document you want.
+            
+            Upload a file or enter a topic.
         '''
     )
-])
-format_prompt = ChatPromptTemplate.from_messages([
-    (
-        'system',
-        """
-            You are the algorithm that formats the message. It will pass the context. Receive the example input and change it to json format like example output. Answers with (o) are the correct ones. Example input will be passed to context.
+else:
+    llm = ChatOpenAI(
+        temperature=0.1,
+        model="gpt-4o-mini",
+        streaming=True,
+        callbacks=[StreamingStdOutCallbackHandler()],
+        api_key=api_key
+    )
+    question_prompt = ChatPromptTemplate.from_messages([
+        (
+            'system',
+            '''        
+            You are an assistant in the role of a teacher. Give 4 problems based on the received context. Each problem has 4 options. Only one of the choices is correct. Mark the correct answer using (o).Please refer to the example below. The difficulty levels of the questions are high, medium, and low. Set it randomly. And please specify the difficulty level next to the problem.
 
-            Example Input:
+            Question Examples:
                 Question: What is the color of the ocean? (high)
                 Answers: Red|Yellow|Green|Blue(o)
                     
@@ -199,119 +185,129 @@ format_prompt = ChatPromptTemplate.from_messages([
                 Question: Who was Julius Caesar? (low)
                 Answers: A Roman Emperor(o)|Painter|Actor|Model
 
-            Example Output:
-                ```json
-                {{
-                    'questions': [
-                        {{
-                            'question': 'What is the color of the ocean? (high)',
-                            'answers': [
-                                {{
-                                    'answer': 'Red',
-                                    'correct': false
-                                }},
-                                {{
-                                    'answer': 'Yellow',
-                                    'correct': false
-                                }},
-                                {{
-                                    'answer': 'Green',
-                                    'correct': false
-                                }},
-                                {{
-                                    'answer': 'Blue',
-                                    'correct': true
-                                }}
-                            ]
-                        }},
-                        {{
-                            "question": "What is the capital or Georgia?" (medium),
-                            "answers": [
-                                {{
-                                    "answer": "Baku",
-                                    "correct": false
-                                }},
-                                {{
-                                    "answer": "Tbilisi",
-                                    "correct": true
-                                }},
-                                {{
-                                    "answer": "Manila",
-                                    "correct": false
-                                }},
-                                {{
-                                    "answer": "Beirut",
-                                    "correct": false
-                                }},
-                            ]
-                        }},
-                        {{
-                            "question": "When was Avatar released?" (high),
-                            "answers": [
-                                {{
-                                    "answer": "2007",
-                                    "correct": false
-                                }},
-                                {{
-                                    "answer": "2001",
-                                    "correct": false
-                                }},
-                                {{
-                                    "answer": "2009",
-                                    "correct": true
-                                }},
-                                {{
-                                    "answer": "1998",
-                                    "correct": false
-                                }},
-                            ]
-                        }},
-                        {{
-                            "question": "Who was Julius Caesar?" (low),
-                            "answers": [
-                                {{
-                                    "answer": "A Roman Emperor",
-                                    "correct": true
-                                }},
-                                {{
-                                    "answer": "Painter",
-                                    "correct": false
-                                }},
-                                {{
-                                    "answer": "Actor",
-                                    "correct": false
-                                }},
-                                {{
-                                    "answer": "Model",
-                                    "correct": false
-                                }},
-                            ]
-                        }}
-                    ]
-                }}
-                ```
-                Context: {context}
+            Context: {context}
+            '''
+        )
+    ])
+    format_prompt = ChatPromptTemplate.from_messages([
+        (
+            'system',
             """
-    )
-])
+                You are the algorithm that formats the message. It will pass the context. Receive the example input and change it to json format like example output. Answers with (o) are the correct ones. Example input will be passed to context.
 
-    
-output_parser = JsonOutputParser()
+                Example Input:
+                    Question: What is the color of the ocean? (high)
+                    Answers: Red|Yellow|Green|Blue(o)
+                        
+                    Question: What is the capital or Georgia? (medium)
+                    Answers: Baku|Tbilisi(o)|Manila|Beirut
+                        
+                    Question: When was Avatar released? (high)
+                    Answers: 2007|2001|2009(o)|1998
+                        
+                    Question: Who was Julius Caesar? (low)
+                    Answers: A Roman Emperor(o)|Painter|Actor|Model
 
-question_chain = {'context': format_docs} | question_prompt | llm
-format_chain = format_prompt | llm 
+                Example Output:
+                    ```json
+                    {{
+                        'questions': [
+                            {{
+                                'question': 'What is the color of the ocean? (high)',
+                                'answers': [
+                                    {{
+                                        'answer': 'Red',
+                                        'correct': false
+                                    }},
+                                    {{
+                                        'answer': 'Yellow',
+                                        'correct': false
+                                    }},
+                                    {{
+                                        'answer': 'Green',
+                                        'correct': false
+                                    }},
+                                    {{
+                                        'answer': 'Blue',
+                                        'correct': true
+                                    }}
+                                ]
+                            }},
+                            {{
+                                "question": "What is the capital or Georgia?" (medium),
+                                "answers": [
+                                    {{
+                                        "answer": "Baku",
+                                        "correct": false
+                                    }},
+                                    {{
+                                        "answer": "Tbilisi",
+                                        "correct": true
+                                    }},
+                                    {{
+                                        "answer": "Manila",
+                                        "correct": false
+                                    }},
+                                    {{
+                                        "answer": "Beirut",
+                                        "correct": false
+                                    }},
+                                ]
+                            }},
+                            {{
+                                "question": "When was Avatar released?" (high),
+                                "answers": [
+                                    {{
+                                        "answer": "2007",
+                                        "correct": false
+                                    }},
+                                    {{
+                                        "answer": "2001",
+                                        "correct": false
+                                    }},
+                                    {{
+                                        "answer": "2009",
+                                        "correct": true
+                                    }},
+                                    {{
+                                        "answer": "1998",
+                                        "correct": false
+                                    }},
+                                ]
+                            }},
+                            {{
+                                "question": "Who was Julius Caesar?" (low),
+                                "answers": [
+                                    {{
+                                        "answer": "A Roman Emperor",
+                                        "correct": true
+                                    }},
+                                    {{
+                                        "answer": "Painter",
+                                        "correct": false
+                                    }},
+                                    {{
+                                        "answer": "Actor",
+                                        "correct": false
+                                    }},
+                                    {{
+                                        "answer": "Model",
+                                        "correct": false
+                                    }},
+                                ]
+                            }}
+                        ]
+                    }}
+                    ```
+                    Context: {context}
+                """
+        )
+    ])
+    output_parser = JsonOutputParser()
 
+    question_chain = {'context': format_docs} | question_prompt | llm
+    format_chain = format_prompt | llm 
 
-
-if not docs:
-    st.markdown(
-        '''
-            We will create a quiz related to the document you want.
-            
-            Upload a file or enter a topic.
-        '''
-    )
-else:
     response = create_quiz(docs, keyword if keyword else file.name) # docs > question > formatting
     correct_count = 0 #맞춘 갯수
     total_questions = len(response['questions']) #질문 갯수
