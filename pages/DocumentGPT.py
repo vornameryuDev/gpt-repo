@@ -12,6 +12,8 @@ from langchain.callbacks.base import BaseCallbackHandler
 
 
 
+#---------- header
+st.title("DocumentGPT")
 
 #---------- function
 def format_docs(docs):
@@ -89,9 +91,29 @@ with st.sidebar:
         label="Upload File",
         type=["txt"]
     )
-    st.session_state
+# 공간을 많이 띄우기 위해 추가
+st.sidebar.markdown("<br><br><br><br><br><br>", unsafe_allow_html=True)
+
+# GitHub 링크를 사이드바 하단에 추가하고 가운데 정렬하기 위한 CSS
+st.sidebar.markdown(
+    """
+    <div style="text-align: center;">
+        <a href="https://github.com/vornameryuDev" target="_blank">GitHub 링크</a>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
+
 
 #---------- main
+if not file:
+    st.markdown(
+    '''
+    Upload your document. And ask questions related to the document.
+    
+    AI will answer.
+    '''
+    )
 if file:
     retriever = embed_file(file, api_key)
 

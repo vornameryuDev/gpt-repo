@@ -23,12 +23,12 @@
 
 [과제]
 - 함수 호출을 사용 [o]
-- 만점이 아닌 경우 유저가 시험을 다시 치를 수 있도록 허용합니다. [o]: st.warning
-- 만점이면 st.ballons를 사용합니다. [o]: st.balloon
-- 유저가 자체 OpenAI API 키를 사용하도록 허용하고, st.sidebar 내부의 st.input에서 로드합니다. [o]: text_input
+- 만점이 아닌 경우 유저가 시험을 다시 치를 수 있도록 허용[o]: st.warning
+- 만점이면 st.ballons를 사용 [o]: st.balloon
+- 유저가 자체 OpenAI API 키를 사용하도록 허용, st.sidebar 내부의 st.input에서 로드합니다. [o]: text_input
 
-- 유저가 시험의 난이도를 커스터마이징 할 수 있도록 하고 LLM이 어려운 문제 또는 쉬운 문제를 생성하도록 합니다. [x]
-- st.sidebar를 사용하여 Streamlit app의 코드와 함께 Github 리포지토리에 링크를 넣습니다. [x]
+- 유저가 시험의 난이도를 커스터마이징 할 수 있도록, LLM이 어려운 문제 또는 쉬운 문제를 생성 [o]
+- st.sidebar를 사용하여 Streamlit app의 코드와 함께 Github 리포지토리에 링크 삽입 [x]
 
 '''
 
@@ -53,14 +53,7 @@ st.set_page_config(
 )
 
 st.title("QuizGPT")
-st.markdown(
-    '''
-        We will create a quiz related to the document you want.
-        
-        Upload a file or enter a topic.
 
-    '''
-)
 
 #---------- function
 @st.cache_resource(show_spinner="Searching Wikipedia...")
@@ -98,14 +91,29 @@ class JsonOutputParser(BaseOutputParser):
         return json.loads(text)
 
 @st.cache_resource(show_spinner="Making quiz...")
-def create_quiz(_docs):
+def create_quiz(_docs, file):
     chain = {'context': question_chain} | format_chain | output_parser
     response = chain.invoke(_docs)
     return response
 
+def save_apikey(api_key):
+    st.session_state['key'].append({'api_key': api_key})
 #---------- sidebar
 with st.sidebar:
     docs = None
+    st.session_state['key'] = [] #api-key 초기화    
+    api_key = st.text_input(
+        label="Enter your openAI API-KEY",
+        type='password',
+    )
+    key_btn = st.button('submit API-KEY', on_click=save_apikey(api_key=api_key))
+    if key_btn: #입력여부 확인
+        if len(st.session_state['key'][0]['api_key']) == 0:
+            st.warning('Warning: Enter you API-KEY!')
+        else:
+            st.warning('Once submitted, it has been submitted. If the model does not run, check the api-key.')
+
+
     choice = st.selectbox(
         label="Choice Options",
         options=["File", "Wikipedia"]
@@ -121,33 +129,51 @@ with st.sidebar:
         keyword = st.text_input(
             label='Enter the keyword you want to search'
         )
-        docs = wikipedia_search(keyword=keyword)
+        search_btn = st.button(label="Search")
+        if search_btn:
+            if not keyword:
+                st.warning('Enter the keyword')
+            docs = wikipedia_search(keyword=keyword)
 
+    
+    # 공간을 많이 띄우기 위해 추가
+    st.sidebar.markdown("<br><br><br><br><br><br>", unsafe_allow_html=True)
+
+    # GitHub 링크를 사이드바 하단에 추가하고 가운데 정렬하기 위한 CSS
+    st.sidebar.markdown(
+        """
+        <div style="text-align: center;">
+            <a href="https://github.com/vornameryuDev" target="_blank">GitHub 링크</a>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
 
 #---------- main
 llm = ChatOpenAI(
     temperature=0.1,
     model="gpt-4o-mini",
     streaming=True,
-    callbacks=[StreamingStdOutCallbackHandler()]
+    callbacks=[StreamingStdOutCallbackHandler()],
+    api_key=api_key
 )
 question_prompt = ChatPromptTemplate.from_messages([
     (
         'system',
         '''        
-        You are an assistant in the role of a teacher. Give 4 problems based on the received context. Each problem has 4 options. Only one of the choices is correct. Mark the correct answer using (o).Please refer to the example below.
+        You are an assistant in the role of a teacher. Give 4 problems based on the received context. Each problem has 4 options. Only one of the choices is correct. Mark the correct answer using (o).Please refer to the example below. The difficulty levels of the questions are high, medium, and low. Set it randomly. And please specify the difficulty level next to the problem.
 
         Question Examples:
-            Question: What is the color of the ocean?
+            Question: What is the color of the ocean? (high)
             Answers: Red|Yellow|Green|Blue(o)
                 
-            Question: What is the capital or Georgia?
+            Question: What is the capital or Georgia? (medium)
             Answers: Baku|Tbilisi(o)|Manila|Beirut
                 
-            Question: When was Avatar released?
+            Question: When was Avatar released? (high)
             Answers: 2007|2001|2009(o)|1998
                 
-            Question: Who was Julius Caesar?
+            Question: Who was Julius Caesar? (low)
             Answers: A Roman Emperor(o)|Painter|Actor|Model
 
         Context: {context}
@@ -161,16 +187,16 @@ format_prompt = ChatPromptTemplate.from_messages([
             You are the algorithm that formats the message. It will pass the context. Receive the example input and change it to json format like example output. Answers with (o) are the correct ones. Example input will be passed to context.
 
             Example Input:
-                Question: What is the color of the ocean?
+                Question: What is the color of the ocean? (high)
                 Answers: Red|Yellow|Green|Blue(o)
                     
-                Question: What is the capital or Georgia?
+                Question: What is the capital or Georgia? (medium)
                 Answers: Baku|Tbilisi(o)|Manila|Beirut
                     
-                Question: When was Avatar released?
+                Question: When was Avatar released? (high)
                 Answers: 2007|2001|2009(o)|1998
                     
-                Question: Who was Julius Caesar?
+                Question: Who was Julius Caesar? (low)
                 Answers: A Roman Emperor(o)|Painter|Actor|Model
 
             Example Output:
@@ -178,7 +204,7 @@ format_prompt = ChatPromptTemplate.from_messages([
                 {{
                     'questions': [
                         {{
-                            'question': 'What is the color of the ocean?',
+                            'question': 'What is the color of the ocean? (high)',
                             'answers': [
                                 {{
                                     'answer': 'Red',
@@ -199,7 +225,7 @@ format_prompt = ChatPromptTemplate.from_messages([
                             ]
                         }},
                         {{
-                            "question": "What is the capital or Georgia?",
+                            "question": "What is the capital or Georgia?" (medium),
                             "answers": [
                                 {{
                                     "answer": "Baku",
@@ -220,7 +246,7 @@ format_prompt = ChatPromptTemplate.from_messages([
                             ]
                         }},
                         {{
-                            "question": "When was Avatar released?",
+                            "question": "When was Avatar released?" (high),
                             "answers": [
                                 {{
                                     "answer": "2007",
@@ -241,7 +267,7 @@ format_prompt = ChatPromptTemplate.from_messages([
                             ]
                         }},
                         {{
-                            "question": "Who was Julius Caesar?",
+                            "question": "Who was Julius Caesar?" (low),
                             "answers": [
                                 {{
                                     "answer": "A Roman Emperor",
@@ -286,13 +312,13 @@ if not docs:
         '''
     )
 else:
-    response = create_quiz(docs) # docs > question > formatting
-    st.write(response)
+    response = create_quiz(docs, keyword if keyword else file.name) # docs > question > formatting
     correct_count = 0 #맞춘 갯수
     total_questions = len(response['questions']) #질문 갯수
 
     with st.form("questions_form"):
-        for question in response["questions"]:            
+        for i, question in enumerate(response["questions"]):
+            st.write(f"**{i+1}. {question['question']}**")
             answers = [answer['answer'] for answer in question["answers"]]
             value = st.radio(
                 "Select an option.",
@@ -304,7 +330,7 @@ else:
                 correct_count += 1 #맞추면 +1
             elif value is not None:
                 st.error('Wrong!!!')
-        button = st.form_submit_button()
+        button = st.form_submit_button() #제출버튼
         if button:            
             if correct_count == total_questions: #다맞추면 balloons
                 st.balloons()
