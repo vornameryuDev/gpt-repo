@@ -49,6 +49,10 @@ def embed_file(file, api_key):
     #vectorstore > retriever
     vectorstore = FAISS.from_documents(docs, cached_embeddings)
     retriever = vectorstore.as_retriever()
+    
+    for doc in retriever:
+        print(doc)
+
     print("retriever 생성 완료")
     return retriever
 
