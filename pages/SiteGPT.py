@@ -196,7 +196,14 @@ choose_prompt = ChatPromptTemplate.from_messages([
     ('human', '{question}')
 ])
 
+if not api_key:
+    st.markdown(
+        """
+        Ask questions about the content of a website.
 
+        Start by writing the URL of the website on the sidebar.
+        """
+    )
 if not url:
     st.markdown(
         """
