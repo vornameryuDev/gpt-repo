@@ -27,9 +27,9 @@
 
 
 import streamlit as st
-from langchain.document_loaders import SitemapLoader
+from langchain_community.document_loaders import SitemapLoader
 from langchain.text_splitter import CharacterTextSplitter
-from langchain.vectorstores import FAISS
+from langchain_community.vectorstores import FAISS
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from langchain.prompts import ChatPromptTemplate
 from langchain.schema.runnable import RunnablePassthrough, RunnableLambda
