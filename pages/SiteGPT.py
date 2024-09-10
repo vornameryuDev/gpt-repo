@@ -58,7 +58,9 @@ with st.sidebar:
             label="Write down a URL(only sitemap.xml)",
             placeholder="https://example.com/sitemap.xml"
         )
-    
+        if url:                        
+            st.success("Correct URL")
+            
     # 공간을 많이 띄우기 위해 추가
     st.sidebar.markdown("<br><br><br><br><br><br>", unsafe_allow_html=True)
 
@@ -206,8 +208,6 @@ if not url:
 elif not ".xml" in url:
     st.error('please write down a Sitemap URL')
 elif url:
-    with st.sidebar:
-        st.success("Correct URL")
 
     retriever = load_website(url)
 
