@@ -35,6 +35,7 @@ from langchain.prompts import ChatPromptTemplate
 from langchain.schema.runnable import RunnablePassthrough, RunnableLambda
 from langchain.embeddings import CacheBackedEmbeddings
 from langchain.storage import LocalFileStore
+from langchain.callbacks.base import BaseCallbackHandler
 
 
 #---------- header & icon
@@ -47,19 +48,15 @@ st.title("Site GTP")
 
 #---------- sidebar
 with st.sidebar:
-    url=None
     api_key = st.text_input(
-        label="Write down your OpenAI API-KEY",
-        placeholder="sk-..."
+        label="Enter your openAI API-KEY",
+        type='password',
     )
-    if api_key:
-        st.success('API-KEY correct!')
-        url = st.text_input(
-            label="Write down a URL(only sitemap.xml)",
-            placeholder="https://example.com/sitemap.xml"
-        )
-        if url:                        
-            st.success("Correct URL")
+    url = st.text_input(
+        label="Write down a URL(only sitemap.xml)",
+        placeholder="https://example.com/sitemap.xml"
+    )
+     
             
     # 공간을 많이 띄우기 위해 추가
     st.sidebar.markdown("<br><br><br><br><br><br>", unsafe_allow_html=True)
@@ -159,8 +156,9 @@ def save_message(role, message):
 
 
 llm = ChatOpenAI(
+    api_key=api_key,
     temperature=0.1,
-    api_key=api_key
+    model='gpt-4o-mini'
 )
 answers_prompt = ChatPromptTemplate.from_messages([
     (
@@ -226,7 +224,7 @@ elif url:
             }
             | RunnableLambda(get_answers)
             | RunnableLambda(choose_answer)
-        )
+        )        
         result = chain.invoke(query)
         send_message('ai', result.content, save=True) #답변 그리기 > 저장
             
