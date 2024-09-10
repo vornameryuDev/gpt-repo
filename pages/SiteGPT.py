@@ -95,9 +95,11 @@ def load_website(url):
         chunk_overlap=100,
     )
     docs = loader.load_and_split(text_splitter=splitter)
+    print("docs완료")
 
     #embedding & vectorstore
     embeddings = OpenAIEmbeddings(api_key=api_key)
+    print("embedding완료")
     cached_path = LocalFileStore('././.cache/embeddings/sitemap.xml')
     cached_embeddings = CacheBackedEmbeddings.from_bytes_store(embeddings, cached_path)
     vectorstore = FAISS.from_documents(docs, cached_embeddings)
@@ -120,6 +122,7 @@ def get_answers(input):
             } for doc in docs
         ]
     }
+    print('get_answers완료')
     return result
 
 def choose_answer(input):
@@ -133,6 +136,7 @@ def choose_answer(input):
             'question': question
         } 
     )
+    print('choose_answers완료')
     return result
 
 def send_message(role, message, save=True):
