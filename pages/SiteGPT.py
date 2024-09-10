@@ -48,6 +48,7 @@ st.title("Site GTP")
 
 #---------- sidebar
 with st.sidebar:
+    url=None
     api_key = st.text_input(
         label="Enter your openAI API-KEY",
         type='password',
@@ -210,7 +211,6 @@ if not url:
 elif not ".xml" in url:
     st.error('please write down a Sitemap URL')
 elif url:
-
     retriever = load_website(url)
 
     send_message('ai', 'Ask about sitemap!', save=False)
