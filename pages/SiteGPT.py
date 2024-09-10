@@ -52,10 +52,14 @@ with st.sidebar:
         label="Enter your openAI API-KEY",
         type='password',
     )
-    url = st.text_input(
-        label="Write down a URL(only sitemap.xml)",
-        placeholder="https://example.com/sitemap.xml"
-    )
+    if api_key:
+        st.success('Entered API-KEY!!')
+        url = st.text_input(
+            label="Write down a URL(only sitemap.xml)",
+            placeholder="https://example.com/sitemap.xml"
+        )
+        if url:
+            st.success('Correct URL!!')
      
             
     # 공간을 많이 띄우기 위해 추가
