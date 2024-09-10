@@ -159,11 +159,7 @@ def save_message(role, message):
 
 
 
-llm = ChatOpenAI(
-    api_key=api_key,
-    temperature=0.1,
-    model='gpt-4o-mini'
-)
+
 answers_prompt = ChatPromptTemplate.from_messages([
     (
         'system',
@@ -196,14 +192,7 @@ choose_prompt = ChatPromptTemplate.from_messages([
     ('human', '{question}')
 ])
 
-if not api_key:
-    st.markdown(
-        """
-        Ask questions about the content of a website.
 
-        Start by writing the URL of the website on the sidebar.
-        """
-    )
 if not url:
     st.markdown(
         """
@@ -223,6 +212,12 @@ elif url:
     send_message('ai', 'Ask about sitemap!', save=False)
 
     paint_history() #그리기
+
+    llm = ChatOpenAI(
+        api_key=api_key,
+        temperature=0.1,
+        model='gpt-4o-mini'
+    )
 
     #질문
     query = st.chat_input()
