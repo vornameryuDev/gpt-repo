@@ -28,6 +28,7 @@ debugpy==1.8.5
 decorator==5.1.1
 Deprecated==1.2.14
 distro==1.9.0
+duckduckgo_search==6.2.11
 exceptiongroup==1.2.2
 executing==2.0.1
 faiss-cpu==1.8.0.post1
@@ -104,6 +105,7 @@ parso==0.8.4
 pillow==10.4.0
 platformdirs==4.2.2
 posthog==3.6.0
+primp==0.6.1
 prompt_toolkit==3.0.47
 protobuf==4.25.4
 psutil==6.0.0
@@ -160,6 +162,7 @@ wcwidth==0.2.13
 websocket-client==1.8.0
 websockets==13.0.1
 wikipedia==1.4.0
+Wikipedia-API==0.7.1
 wrapt==1.16.0
 yarl==1.9.4
 zipp==3.20.0
