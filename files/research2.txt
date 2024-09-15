@@ -1,0 +1,31 @@
+### XZ Utils Backdoor
+
+In February 2024, a malicious backdoor was introduced to the Linux utility xz within the liblzma library in versions 5.6.0 and 5.6.1 by an account using the name "Jia Tan". The backdoor gives an attacker who possesses a specific Ed448 private key remote code execution capabilities on the affected Linux system. The issue has been given the Common Vulnerabilities and Exposures number CVE-2024-3094 and has been assigned a CVSS score of 10.0, the highest possible score.
+
+While xz is commonly present in most Linux distributions, at the time of discovery, the backdoored version had not yet been widely deployed to production systems, but was present in development versions of major distributions. The backdoor was discovered by the software developer Andres Freund, who announced his findings on 29 March 2024.
+
+#### Background
+
+Andres Freund reported the backdoor after investigating a performance regression in Debian Sid. Freund noticed that SSH connections were generating an unexpectedly high amount of CPU usage as well as causing errors in Valgrind, a memory debugging tool. The attacker made efforts to obfuscate the code, as the backdoor consists of multiple stages that act together.
+
+Once the compromised version is incorporated into the operating system, it alters the behavior of OpenSSH's SSH server daemon by abusing the systemd library, allowing the attacker to gain administrator access. A subsequent investigation found that the campaign to insert the backdoor into the XZ Utils project was a culmination of approximately three years of effort, with the perpetrator taking significant measures to gain trust within the project.
+
+#### Mechanism
+
+The malicious code is known to be in 5.6.0 and 5.6.1 releases of the XZ Utils software package. The exploit remains dormant unless a specific third-party patch of the SSH server is used. The backdoor utilizes a method that allows for unauthorized access to the entire system remotely.
+
+#### Response
+
+The US federal Cybersecurity and Infrastructure Security Agency has issued a security advisory recommending that the affected devices should roll back to a previous uncompromised version. Reverts to older versions have occurred across various Linux software vendors including Red Hat and SUSE.
+
+### XZ Utils
+
+XZ Utils is a set of free software command-line lossless data compressors, including the programs lzma and xz, for Unix-like operating systems and, from version 5.0 onwards, Microsoft Windows. For compression/decompression, the Lempel–Ziv–Markov chain algorithm (LZMA) is used. XZ Utils began as a Unix port of Igor Pavlov's LZMA-SDK, adapted for Unix environments.
+
+### Backdoor (Computing)
+
+A backdoor is a method of bypassing normal authentication or encryption in a computer, often used for securing remote access to a computer. Backdoors can be covertly installed or may serve more obvious purposes. Some are used for legitimate recovery access, while others are nefarious in nature, leading to unauthorized access.
+
+Backdoors hold potential security risks, notably in multiuser and networked operating systems. For example, Trojan horses can be used to create vulnerabilities, or manufactured devices can contain hidden backdoors, impacting overall software integrity.
+
+Backdoor incidents can have severe implications, potentially allowing unauthorized users significant access to critical components, leading to data breaches or other cybersecurity incidents.
